@@ -1,0 +1,17 @@
+id,name,pos_x,pos_y,elevation_m,has_charging_station,charging_capacity_kw
+A,Downtown Central,2.0,5.0,120.0,True,150
+B,North Gate Interchange,3.0,8.5,145.0,True,100
+C,Financial District,5.0,5.5,125.0,False,0
+D,Midtown Crossing,3.5,4.0,130.0,True,50
+E,West End Terminal,1.0,3.5,110.0,False,0
+F,South Tech Park,4.0,1.5,160.0,True,150
+G,Harbor Bay,1.0,1.0,100.0,False,0
+H,East Hill Suburbs,7.5,6.0,210.0,False,0
+I,Airport Logistics Hub,8.5,3.5,150.0,True,250
+J,University Campus,6.0,3.0,140.0,True,100
+K,Green Valley Park,2.0,7.0,135.0,False,0
+L,Uptown Plaza,5.5,8.0,170.0,False,0
+M,Industrial Park East,7.0,1.0,115.0,True,150
+N,Residential Heights,4.0,6.5,155.0,False,0
+O,Central Logistics Hub,5.0,4.0,132.0,True,150
+P,Metro Interchange,2.5,2.5,118.0,True,50

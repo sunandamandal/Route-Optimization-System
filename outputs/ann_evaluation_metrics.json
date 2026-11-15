@@ -1,0 +1,7 @@
+{
+    "Mean_Absolute_Error_MAE_kWh": 0.1338,
+    "Mean_Squared_Error_MSE_kWh2": 0.0374,
+    "Root_Mean_Squared_Error_RMSE_kWh": 0.1933,
+    "R_Squared_Score_R2": 0.9859,
+    "Test_Samples_Count": 300
+}
