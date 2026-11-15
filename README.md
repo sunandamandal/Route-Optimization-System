@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Route Optimization System (Smart Navigation for Electric Vehicles)
 
 > **Undergraduate College AI/ML Capstone Project**  
@@ -481,3 +482,7 @@ This directs the search toward the destination, evaluating fewer nodes while gua
 - **MSE (Mean Squared Error)**: $0.0374\text{ kWh²}$ (penalizes large outlier errors)
 - **RMSE (Root Mean Squared Error)**: $0.1933\text{ kWh}$
 - **R² Score**: $0.9859$ (indicates that 98.59% of variance in energy consumption is explained by the model)
+=======
+# Route-Optimization-System
+Energy-based Route Optimization System for Smart EV Navigation using AI.
+>>>>>>> 42b52a319ce7584eb7a442c41702868d98ab6378
