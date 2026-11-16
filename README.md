@@ -407,3 +407,5 @@ Explore the application to test EV route optimization and view the available fea
 <p align="center">
   <em>Smarter Routes. Better Energy Efficiency. Sustainable Mobility.</em>
 </p>
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/cba78cd7-7a07-4a94-b23e-f8d540b2f5d3" />
