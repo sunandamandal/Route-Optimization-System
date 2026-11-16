@@ -35,6 +35,7 @@ class RouteSegment:
     traffic_level: str
     slope_percent: float
     speed_limit_kmh: int
+    feature_provenance: Optional[Dict[str, Any]] = None
 
 
 @dataclass

@@ -334,56 +334,74 @@ def create_sample_traffic_images(output_dir: Optional[Union[str, Path]] = None):
     if output_dir is None:
         output_dir = TRAFFIC_DATASET_DIR
     output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Low Traffic Image (Quiet open asphalt with 1 vehicle)
-    img_low = Image.new("RGB", (256, 256), color="#34495e")
-    draw_l = ImageDraw.Draw(img_low)
-    # Road markings
-    draw_l.line([(128, 0), (128, 256)], fill="#f1c40f", width=4)
-    draw_l.line([(30, 0), (30, 256)], fill="#ecf0f1", width=3)
-    draw_l.line([(226, 0), (226, 256)], fill="#ecf0f1", width=3)
-    # 1 car
-    draw_l.rectangle([110, 160, 146, 210], fill="#e74c3c", outline="#c0392b", width=2)
-    img_low.save(output_dir / "sample_low.png")
+    low_p = output_dir / "sample_low.png"
+    med_p = output_dir / "sample_medium.png"
+    high_p = output_dir / "sample_high.png"
 
-    # 2. Medium Traffic Image (5 vehicles evenly distributed)
-    img_med = Image.new("RGB", (256, 256), color="#34495e")
-    draw_m = ImageDraw.Draw(img_med)
-    draw_m.line([(128, 0), (128, 256)], fill="#f1c40f", width=4)
-    draw_m.line([(30, 0), (30, 256)], fill="#ecf0f1", width=3)
-    draw_m.line([(226, 0), (226, 256)], fill="#ecf0f1", width=3)
-    # 5 cars
-    cars_m = [
-        (60, 40, 95, 80, "#3498db"),
-        (150, 60, 185, 100, "#e67e22"),
-        (65, 130, 100, 170, "#2ecc71"),
-        (155, 160, 190, 205, "#9b59b6"),
-        (110, 210, 145, 250, "#e74c3c")
-    ]
-    for x1, y1, x2, y2, c in cars_m:
-        draw_m.rectangle([x1, y1, x2, y2], fill=c, outline="#2c3e50", width=2)
-    img_med.save(output_dir / "sample_medium.png")
+    # Avoid unnecessary recreation if files already exist
+    if low_p.exists() and med_p.exists() and high_p.exists():
+        return
 
-    # 3. High Traffic Image (Gridlock with 14 vehicles crowded together)
-    img_high = Image.new("RGB", (256, 256), color="#2c3e50")
-    draw_h = ImageDraw.Draw(img_high)
-    draw_h.line([(128, 0), (128, 256)], fill="#f1c40f", width=4)
-    draw_h.line([(30, 0), (30, 256)], fill="#ecf0f1", width=3)
-    draw_h.line([(226, 0), (226, 256)], fill="#ecf0f1", width=3)
-    # Bumper to bumper cars
-    cars_h = [
-        (50, 10, 85, 45, "#e74c3c"), (140, 15, 175, 50, "#f39c12"),
-        (55, 55, 90, 90, "#3498db"), (145, 60, 180, 95, "#2ecc71"),
-        (50, 100, 85, 135, "#e67e22"), (140, 105, 175, 140, "#9b59b6"),
-        (55, 145, 90, 180, "#1abc9c"), (145, 150, 180, 185, "#e74c3c"),
-        (50, 190, 85, 225, "#f1c40f"), (140, 195, 175, 230, "#34495e"),
-        (95, 30, 130, 65, "#bdc3c7"), (95, 120, 130, 155, "#d35400"),
-        (95, 210, 130, 245, "#8e44ad")
-    ]
-    for x1, y1, x2, y2, c in cars_h:
-        draw_h.rectangle([x1, y1, x2, y2], fill=c, outline="#111111", width=2)
-    img_high.save(output_dir / "sample_high.png")
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
+    try:
+        # 1. Low Traffic Image (Quiet open asphalt with 1 vehicle)
+        img_low = Image.new("RGB", (256, 256), color="#34495e")
+        draw_l = ImageDraw.Draw(img_low)
+        # Road markings
+        draw_l.line([(128, 0), (128, 256)], fill="#f1c40f", width=4)
+        draw_l.line([(30, 0), (30, 256)], fill="#ecf0f1", width=3)
+        draw_l.line([(226, 0), (226, 256)], fill="#ecf0f1", width=3)
+        # 1 car
+        draw_l.rectangle([110, 160, 146, 210], fill="#e74c3c", outline="#c0392b", width=2)
+        if not low_p.exists():
+            img_low.save(low_p)
+
+        # 2. Medium Traffic Image (5 vehicles evenly distributed)
+        img_med = Image.new("RGB", (256, 256), color="#34495e")
+        draw_m = ImageDraw.Draw(img_med)
+        draw_m.line([(128, 0), (128, 256)], fill="#f1c40f", width=4)
+        draw_m.line([(30, 0), (30, 256)], fill="#ecf0f1", width=3)
+        draw_m.line([(226, 0), (226, 256)], fill="#ecf0f1", width=3)
+        # 5 cars
+        cars_m = [
+            (60, 40, 95, 80, "#3498db"),
+            (150, 60, 185, 100, "#e67e22"),
+            (65, 130, 100, 170, "#2ecc71"),
+            (155, 160, 190, 205, "#9b59b6"),
+            (110, 210, 145, 250, "#e74c3c")
+        ]
+        for x1, y1, x2, y2, c in cars_m:
+            draw_m.rectangle([x1, y1, x2, y2], fill=c, outline="#2c3e50", width=2)
+        if not med_p.exists():
+            img_med.save(med_p)
+
+        # 3. High Traffic Image (Gridlock with 14 vehicles crowded together)
+        img_high = Image.new("RGB", (256, 256), color="#2c3e50")
+        draw_h = ImageDraw.Draw(img_high)
+        draw_h.line([(128, 0), (128, 256)], fill="#f1c40f", width=4)
+        draw_h.line([(30, 0), (30, 256)], fill="#ecf0f1", width=3)
+        draw_h.line([(226, 0), (226, 256)], fill="#ecf0f1", width=3)
+        # Bumper to bumper cars
+        cars_h = [
+            (50, 10, 85, 45, "#e74c3c"), (140, 15, 175, 50, "#f39c12"),
+            (55, 55, 90, 90, "#3498db"), (145, 60, 180, 95, "#2ecc71"),
+            (50, 100, 85, 135, "#e67e22"), (140, 105, 175, 140, "#9b59b6"),
+            (55, 145, 90, 180, "#1abc9c"), (145, 150, 180, 185, "#e74c3c"),
+            (50, 190, 85, 225, "#f1c40f"), (140, 195, 175, 230, "#34495e"),
+            (95, 30, 130, 65, "#bdc3c7"), (95, 120, 130, 155, "#d35400"),
+            (95, 210, 130, 245, "#8e44ad")
+        ]
+        for x1, y1, x2, y2, c in cars_h:
+            draw_h.rectangle([x1, y1, x2, y2], fill=c, outline="#111111", width=2)
+        if not high_p.exists():
+            img_high.save(high_p)
+    except Exception:
+        pass
 
 
 # Automatically generate sample images on module import if they don't exist

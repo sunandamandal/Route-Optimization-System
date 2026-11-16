@@ -24,10 +24,10 @@ TRAFFIC_COLORS = {
 
 # Mode route overlay colors
 MODE_COLORS = {
-    "shortest": "#2980b9",   # Royal Blue
-    "fastest": "#e67e22",    # Orange
-    "energy": "#27ae60",     # Emerald Green
-    "balanced": "#8e44ad"    # Purple
+    "shortest": "#3b82f6",   # Vibrant Blue
+    "fastest": "#f97316",    # Vibrant Orange
+    "energy": "#10b981",     # Neon Emerald Green
+    "balanced": "#a855f7"    # Radiant Purple
 }
 
 
@@ -178,3 +178,166 @@ def create_city_folium_map(
             ).add_to(m)
 
     return m
+
+
+def create_india_route_map(
+    source_loc: Any,
+    dest_loc: Any,
+    route_coords: List[Tuple[float, float]],
+    active_route: Any,
+    selected_mode: str = "energy",
+    alternative_routes: Optional[Dict[str, List[Tuple[float, float]]]] = None,
+    candidate_routes: Optional[Dict[str, Any]] = None
+) -> folium.Map:
+    """
+    Constructs an interactive Folium map for Real-World India Navigation.
+    Features:
+      - Automatic bounds fitting to frame any distance (city to inter-state).
+      - Display of alternative candidate routes (dashed subtle lines) when available.
+      - Real GPS highway polylines with mode-specific vibrant glow for selected route.
+      - Start (Green) and Destination (Red) custom pins with formatted names & coordinates.
+      - Real Highway EV Fast-Charging Plaza pins along the corridor.
+      - Full OpenStreetMap legal attribution.
+    """
+    # 1. Map Center calculation
+    center_lat = (source_loc.lat + dest_loc.lat) / 2.0
+    center_lon = (source_loc.lon + dest_loc.lon) / 2.0
+
+    m = folium.Map(
+        location=[center_lat, center_lon],
+        zoom_start=8,
+        tiles="OpenStreetMap",
+        attr="Data © OpenStreetMap contributors, ODbL 1.0",
+        control_scale=True
+    )
+
+    # 2. Draw Alternative Candidate Routes (Subtle dashed polylines)
+    if alternative_routes:
+        for alt_mode, alt_coords in alternative_routes.items():
+            if alt_mode.lower() != selected_mode.lower() and alt_coords and len(alt_coords) > 1:
+                alt_r = candidate_routes.get(alt_mode) if candidate_routes else None
+                if alt_r:
+                    tip = (
+                        f"Alternative ({alt_mode.upper()} Mode): "
+                        f"{alt_r.total_distance_km:.1f} km | {alt_r.total_time_min:.0f} min | "
+                        f"{alt_r.total_energy_kwh:.2f} kWh"
+                    )
+                else:
+                    tip = f"Alternative Route ({alt_mode.upper()} Mode)"
+
+                folium.PolyLine(
+                    locations=alt_coords,
+                    color="#64748b",
+                    weight=3.5,
+                    opacity=0.65,
+                    dash_array="6, 8",
+                    tooltip=tip
+                ).add_to(m)
+
+    # 3. Draw Selected Active Route Polyline (Thick vibrant glow)
+    if route_coords and len(route_coords) > 1:
+        route_color = MODE_COLORS.get(selected_mode.lower(), "#10b981")
+
+        # Outer depth glow
+        folium.PolyLine(
+            locations=route_coords,
+            color="#0f172a",
+            weight=8.5,
+            opacity=0.50
+        ).add_to(m)
+
+        # Vibrant active navigation path
+        folium.PolyLine(
+            locations=route_coords,
+            color=route_color,
+            weight=5.5,
+            opacity=0.98,
+            tooltip=(
+                f"Selected {selected_mode.upper()} Route: "
+                f"{active_route.total_distance_km:.1f} km | "
+                f"{active_route.total_time_min:.0f} min | "
+                f"{active_route.total_energy_kwh:.2f} kWh"
+            )
+        ).add_to(m)
+
+    # 4. Auto-Fit Bounds to frame the entire journey with padding
+    all_points: List[Tuple[float, float]] = []
+    if route_coords:
+        all_points.extend(route_coords)
+    if alternative_routes:
+        for a_coords in alternative_routes.values():
+            if a_coords:
+                all_points.extend(a_coords)
+    if hasattr(source_loc, "lat") and hasattr(source_loc, "lon"):
+        all_points.append((source_loc.lat, source_loc.lon))
+    if hasattr(dest_loc, "lat") and hasattr(dest_loc, "lon"):
+        all_points.append((dest_loc.lat, dest_loc.lon))
+
+    if all_points:
+        all_lats = [pt[0] for pt in all_points]
+        all_lons = [pt[1] for pt in all_points]
+        min_lat, max_lat = min(all_lats), max(all_lats)
+        min_lon, max_lon = min(all_lons), max(all_lons)
+        lat_span = max(0.01, (max_lat - min_lat) * 0.05)
+        lon_span = max(0.01, (max_lon - min_lon) * 0.05)
+        m.fit_bounds(
+            [[min_lat - lat_span, min_lon - lon_span], [max_lat + lat_span, max_lon + lon_span]],
+            padding=(30, 30)
+        )
+
+    # 5. Source Marker (Green Pin)
+    src_popup = (
+        f"<div style='font-family:Segoe UI, sans-serif; min-width:190px; color:#1e293b;'>"
+        f"<h4 style='margin:0 0 6px 0; color:#10b981; font-weight:700;'>🟢 START LOCATION</h4>"
+        f"<b>{source_loc.display_name}</b><br>"
+        f"<span style='color:#64748b;'>GPS:</span> <code>{source_loc.lat:.4f}° N, {source_loc.lon:.4f}° E</code><br>"
+        f"<span style='color:#64748b;'>Elevation:</span> <b>{source_loc.elevation_m:.0f} m</b>"
+        f"</div>"
+    )
+    folium.Marker(
+        location=[source_loc.lat, source_loc.lon],
+        popup=folium.Popup(src_popup, max_width=320),
+        tooltip=f"Start: {source_loc.short_name}",
+        icon=folium.Icon(color="green", icon="play", prefix="fa")
+    ).add_to(m)
+
+    # 6. Destination Marker (Red Flag)
+    dst_popup = (
+        f"<div style='font-family:Segoe UI, sans-serif; min-width:190px; color:#1e293b;'>"
+        f"<h4 style='margin:0 0 6px 0; color:#ef4444; font-weight:700;'>🏁 DESTINATION</h4>"
+        f"<b>{dest_loc.display_name}</b><br>"
+        f"<span style='color:#64748b;'>GPS:</span> <code>{dest_loc.lat:.4f}° N, {dest_loc.lon:.4f}° E</code><br>"
+        f"<span style='color:#64748b;'>Elevation:</span> <b>{dest_loc.elevation_m:.0f} m</b>"
+        f"</div>"
+    )
+    folium.Marker(
+        location=[dest_loc.lat, dest_loc.lon],
+        popup=folium.Popup(dst_popup, max_width=320),
+        tooltip=f"Destination: {dest_loc.short_name}",
+        icon=folium.Icon(color="red", icon="flag-checkered", prefix="fa")
+    ).add_to(m)
+
+    # 7. Highway EV Fast Charging Stops along Route
+    if active_route.charging_stops and route_coords:
+        num_stops = len(active_route.charging_stops)
+        coord_step = len(route_coords) // (num_stops + 1)
+        for idx, stop_desc in enumerate(active_route.charging_stops, 1):
+            pt_idx = min(len(route_coords) - 1, idx * coord_step)
+            stop_lat, stop_lon = route_coords[pt_idx]
+
+            charger_popup = (
+                f"<div style='font-family:Segoe UI, sans-serif; min-width:190px; color:#1e293b;'>"
+                f"<h4 style='margin:0 0 6px 0; color:#0284c7; font-weight:700;'>⚡ Highway Fast Charger</h4>"
+                f"<b>{stop_desc}</b><br>"
+                f"<span style='color:#64748b;'>Corridor Point:</span> <code>{stop_lat:.4f}° N, {stop_lon:.4f}° E</code>"
+                f"</div>"
+            )
+            folium.Marker(
+                location=[stop_lat, stop_lon],
+                popup=folium.Popup(charger_popup, max_width=290),
+                tooltip=f"⚡ {stop_desc}",
+                icon=folium.Icon(color="darkblue", icon="bolt", prefix="fa")
+            ).add_to(m)
+
+    return m
+
